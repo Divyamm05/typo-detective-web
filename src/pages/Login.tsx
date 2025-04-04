@@ -54,29 +54,32 @@ const Login = () => {
     setIsLoading(true);
   
     try {
-      let user;
       if (isLogin) {
         await handleLogin(email, password);
-        user = JSON.parse(localStorage.getItem("user") || "{}"); 
+        const user = JSON.parse(localStorage.getItem("user") || "{}"); 
+        
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
+    
+        if (user && user.email) {
+          await login(user.email, password);
+        }
+    
+        navigate("/dashboard"); // Redirect to dashboard after login
       } else {
         await handleSignup(email, password);
-        user = JSON.parse(localStorage.getItem("user") || "{}");
         toast({
           title: "Signup successful",
-          description: "Your account has been created. Welcome!",
+          description: "Your account has been created. Please log in.",
+        });
+        console.log("Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+          window.location.reload();
         });
       }
-  
-      // ✅ Now AuthContext's `login` function is available
-      if (user && user.email) {
-        await login(user.email, password);  // This ensures `AuthContext` updates
-      }
-  
-      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: isLogin ? "Login failed" : "Signup failed",
@@ -85,6 +88,38 @@ const Login = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    try {
+      const res = await fetch("http://localhost:5000/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+  
+      if (!res.ok) throw new Error("Failed to send reset email");
+  
+      toast({
+        title: "Reset Link Sent",
+        description: "Check your email for instructions.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
   
@@ -183,6 +218,13 @@ const Login = () => {
                   {isLogin
                     ? "Need an account? Sign Up"
                     : "Already have an account? Login"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="text-blue-600 hover:underline"
+                  onClick={() => navigate("/reset-password")} // Navigate instead of sending email directly
+                  >
+                  Forgot Password?
                 </Button>
               </CardFooter>
             </form>
