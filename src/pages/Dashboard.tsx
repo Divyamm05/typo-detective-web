@@ -68,12 +68,22 @@ const Dashboard = () => {
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
           <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert"/>
+
+          {/* Centered Heading */}
+          <h1 className="text-lg font-semibold flex-grow text-center">
+            Phishing Domain Scanner
+          </h1>
+
+          {/* User Info + Logout */}
           <div className="flex items-center gap-4">
             <span>Hello, {user?.email}</span>
-            <Button className="bg-white text-black hover:bg-gray-300 transition-colors" onClick={handleLogout}>Logout</Button>
+            <Button className="bg-white text-black hover:bg-gray-300 transition-colors" onClick={handleLogout}>
+              Logout
+            </Button>
           </div>
         </div>
       </header>
+
   
       {/* Make main content flexible to push the footer down */}
       <main className="container mx-auto py-8 px-4 flex-grow">

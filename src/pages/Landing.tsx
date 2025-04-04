@@ -14,9 +14,9 @@ const Landing = () => {
         <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert"/>
           <Button
             className="bg-white text-blue-600 hover:bg-gray-100"
-            onClick={() => navigate(user ? "/dashboard" : "/login")}
+            onClick={() => navigate(user ? "/login" : "/login")}
           >
-            {user ? "Dashboard" : "Login / Sign Up"}
+            {user ? "Login / Sign Up" : "Login / Sign Up"}
           </Button>
         </div>
       </header>
@@ -33,9 +33,9 @@ const Landing = () => {
           <Button
             size="lg"
             className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={() => navigate(user ? "/dashboard" : "/login")}
+            onClick={() => navigate(user ? "/login" : "/login")}
           >
-            {user ? "Go to Dashboard" : "Get Started"}
+            {user ? "Get Started" : "Get Started"}
           </Button>
         </div>
       </main>
