@@ -64,25 +64,49 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-          <span>Hello, {user?.email}</span>
-          <Button className="bg-white text-black" onClick={handleLogout}>Logout</Button>
+          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert"/>
+          <div className="flex items-center gap-4">
+            <span>Hello, {user?.email}</span>
+            <Button className="bg-white text-black" onClick={handleLogout}>Logout</Button>
+          </div>
         </div>
       </header>
-
-      <main className="container mx-auto py-8 px-4">
+  
+      {/* Make main content flexible to push the footer down */}
+      <main className="container mx-auto py-8 px-4 flex-grow">
         <Card className="mb-8">
-          <CardHeader><CardTitle>Domain Analysis</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Domain Analysis</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
-              <Input type="text" placeholder="Enter domain (e.g., example.com)" value={domain} onChange={(e) => setDomain(e.target.value)} disabled={isAnalyzing} />
-              <Button onClick={analyzeDomain} disabled={isAnalyzing}>{isAnalyzing ? "Analyzing..." : "Analyze Domain"}</Button>
-            </div>
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault(); // Prevents page reload
+                analyzeDomain();
+              }}
+              className="flex gap-4"
+            >
+              <Input 
+                type="text" 
+                placeholder="Enter domain (e.g., example.com)" 
+                value={domain} 
+                onChange={(e) => setDomain(e.target.value)} 
+                disabled={isAnalyzing} 
+              />
+              <Button 
+                type="submit" 
+                disabled={isAnalyzing} 
+                className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze Domain"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
-
+  
         {results.length > 0 && (
           <Table>
             <TableHeader>
@@ -110,12 +134,21 @@ const Dashboard = () => {
                 </TableRow>
               ))}
             </TableBody>
-
           </Table>
         )}
       </main>
+  
+      {/* Sticky Footer */}
+      <footer className="bg-[#2B2F3E] text-white py-8 mt-auto">
+        <div className="container mx-auto px-4 text-center">
+          <p>
+            &copy; {new Date().getFullYear()} Connect Reseller. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
+  
 };
 
 export default Dashboard;
