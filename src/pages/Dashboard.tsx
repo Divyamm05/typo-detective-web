@@ -70,7 +70,7 @@ const Dashboard = () => {
           <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert"/>
           <div className="flex items-center gap-4">
             <span>Hello, {user?.email}</span>
-            <Button className="bg-white text-black" onClick={handleLogout}>Logout</Button>
+            <Button className="bg-white text-black hover:bg-gray-300 transition-colors" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
       </header>

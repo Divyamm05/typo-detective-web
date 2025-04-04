@@ -128,27 +128,36 @@ def generate_variations(domain, limit=20):
 
     return list(variations)[:limit]  # ✅ Limit the number of variations
 
-    """Generate typo variations."""
-    extracted = tldextract.extract(domain)
-    base_name = extracted.domain
-    tld = extracted.suffix
+async def stream_dns_lookup(domain):
+    """Asynchronously fetch DNS records and stream results."""
+    variations = generate_variations(domain, limit=20)
 
-    variations = set()
-    
-    # Simple variations: omission, replacement, addition
-    for i in range(len(base_name)):
-        variations.add((f"{base_name[:i] + base_name[i+1:]}.{tld}", "Omission"))
+    async with aiohttp.ClientSession() as session:
+        for permuted_domain, perm_type in variations:
+            try:
+                ip_task = query_dns(session, permuted_domain, "A")
+                ipv6_task = query_dns(session, permuted_domain, "AAAA")
+                ns_task = query_dns(session, permuted_domain, "NS")
+                mx_task = query_dns(session, permuted_domain, "MX")
 
-    for i in range(len(base_name)):
-        for char in "aeiou":
-            if base_name[i] != char:
-                variations.add((f"{base_name[:i] + char + base_name[i+1:]}.{tld}", "Replacement"))
+                ip, ipv6, ns, mx = await asyncio.gather(ip_task, ipv6_task, ns_task, mx_task)
 
-    for i in range(len(base_name) + 1):
-        for char in "xyz":
-            variations.add((f"{base_name[:i] + char + base_name[i:]}.{tld}", "Addition"))
+                country = await get_ip_country(ip[0]) if ip else "Unknown"
 
-    return list(variations)[:limit]  # Return only `limit` variations
+                result = {
+                    "permutation": permuted_domain,
+                    "permutationType": perm_type,
+                    "ip": ip[0] if ip else "-",  
+                    "ipv6": ipv6[0] if ipv6 else "-",  
+                    "country": country,  
+                    "nameServer": ns[0] if ns else "-",  
+                    "mailServer": mx[0] if mx else "-",  
+                }
+
+                yield f"data: {jsonify(result).get_data(as_text=True)}\n\n"  # ✅ Stream JSON result
+
+            except Exception:
+                continue  # Skip any failing queries
 
 @app.route("/dns_lookup", methods=["GET"])
 async def dns_lookup():
