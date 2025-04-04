@@ -260,15 +260,22 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground shadow-md">
+      <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Typo Detective</h1>
+          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
           <div className="flex items-center gap-4">
-            <span>Hello, {user?.email}</span>
-            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+            <span className="text-white">Hello, {user?.email}</span>
+            <Button 
+              className="bg-white text-black border border-black hover:bg-gray-200 hover:scale-105 transition-all hover:shadow-lg" 
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           </div>
         </div>
       </header>
+
+
 
       <main className="container mx-auto py-8 px-4">
         <Card className="mb-8">
