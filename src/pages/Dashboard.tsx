@@ -208,7 +208,7 @@ const Dashboard = () => {
       )}
       {!isAnalyzing && results.length > 0 && (
               <p className="text-sm text-gray-600 mt-4">
-                Scanned {totalPermutations} permutations. Found {results.length} registered.
+                Scanned {totalPermutations} permutations.
               </p>
             )}
     </CardContent>
@@ -217,7 +217,7 @@ const Dashboard = () => {
   {results.length > 0 && (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Results ({results.length} found)</h2>
+        <h2 className="text-xl font-semibold"></h2>
         <div className="flex gap-2">
           <Button onClick={downloadAsCSV} variant="outline">
             <Download className="w-4 h-4 mr-1" /> CSV
