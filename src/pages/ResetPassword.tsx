@@ -11,18 +11,21 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   const handleResetRequest = async () => {
+    console.log("Reset request initiated."); // Log when reset request is initiated
     if (!email.trim()) {
       toast({
         title: "Error",
         description: "Please enter your registered email.",
         variant: "destructive",
       });
+      console.log("No email entered."); // Log when no email is provided
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/forgot-password", {
+      console.log(`Sending request to reset password for email: ${email}`); // Log email being sent
+      const res = await fetch("http://localhost:5002/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -31,6 +34,7 @@ const ResetPassword = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
+      console.log("Reset link sent successfully."); // Log successful request
       toast({
         title: "Success",
         description: "Reset link sent. Check your email.",
@@ -38,6 +42,7 @@ const ResetPassword = () => {
 
       navigate("/login"); // Redirect back to login after success
     } catch (error: any) {
+      console.error("Error occurred while sending reset link:", error); // Log any error
       toast({
         title: "Error",
         description: error.message,
@@ -45,6 +50,7 @@ const ResetPassword = () => {
       });
     } finally {
       setIsLoading(false);
+      console.log("Reset request process completed."); // Log when the process is finished
     }
   };
 

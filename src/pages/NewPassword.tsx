@@ -61,7 +61,15 @@ const NewPassword = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <main className="flex-grow flex items-center justify-center px-4">
+      {/* Navbar */}
+      <header className="bg-blue-600 text-white shadow-md">
+        <div className="container mx-auto py-4 px-4 flex justify-between items-center">
+          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
+        </div>
+      </header>
+
+      {/* Main content area */}
+      <main className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md bg-white shadow-lg p-6 rounded-lg border border-gray-200">
           <h2 className="text-2xl font-bold text-center mb-4">Set New Password</h2>
           <p className="text-center text-gray-600 mb-4">
@@ -73,6 +81,7 @@ const NewPassword = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="mb-4"
           />
           <Input
             type="password"
@@ -80,6 +89,7 @@ const NewPassword = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            className="mb-4"
           />
           <Button
             className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
@@ -90,8 +100,14 @@ const NewPassword = () => {
           </Button>
         </div>
       </main>
+
+      {/* Footer (Always at Bottom) */}
+      <footer className="bg-[#2B2F3E] text-white py-6 text-center mt-auto">
+        <p>&copy; {new Date().getFullYear()} Connect Reseller. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
+
 
 export default NewPassword;

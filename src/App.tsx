@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +8,8 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import ResetPassword from "./pages/ResetPassword";
+import ResetPassword from "./pages/ResetPassword";  // Page to request reset link
+import NewPassword from "./pages/NewPassword";  // Page to set new password
 
 const queryClient = new QueryClient();
 
@@ -37,12 +37,19 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      
+      {/* Route for password reset request (reset link is sent here) */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      
+      {/* Route for setting new password, token is passed as a query parameter */}
+      <Route path="/new-password" element={<NewPassword />} />
+      
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
       } />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
