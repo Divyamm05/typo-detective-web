@@ -3,16 +3,18 @@ import crypto from "crypto";
 import mysql from "mysql2/promise";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+const dotenv = require('dotenv');
+dotenv.config();
 
 dotenv.config();
 const router = express.Router();
 
 // MySQL Connection
 const db = await mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Divyam@05",
-  database: "dnstwister",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 console.log("[INIT] Connected to MySQL");
@@ -58,16 +60,16 @@ router.post("/forgot-password", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "divyam.hs@somaiya.edu",
-        pass: "yhhv qwff zynz qjkr", // Use env variable in prod!
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD, 
       },
-      debug: true, // Enable debug mode for email logs
+      debug: true, 
     });
 
     console.log("[EMAIL] Transporter created");
 
     const mailOptions = {
-      from: "divyam.hs@somaiya.edu",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset",
       html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,

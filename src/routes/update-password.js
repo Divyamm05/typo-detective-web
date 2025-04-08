@@ -1,16 +1,18 @@
 import express from "express";
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+const dotenv = require('dotenv');
+dotenv.config();
 
 dotenv.config();
 const router = express.Router();
 
 // MySQL connection
 const db = await mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Divyam@05",
-  database: "dnstwister",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 router.post("/update-password", async (req, res) => {

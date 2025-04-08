@@ -4,6 +4,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const dotenv = require('dotenv');
+dotenv.config();
+
 
 const app = express();
 const port = 5002;
@@ -15,10 +18,10 @@ app.use(bodyParser.json());
 
 // MySQL connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Divyam@05",
-  database: "dnstwister",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // Connect to DB
@@ -114,8 +117,8 @@ app.post("/forgot-password", async (req, res) => {
           const transporter = nodemailer.createTransport({
             service: "Gmail",
             auth: {
-              user: "divyam.hs@somaiya.edu",
-              pass: "yhhv qwff zynz qjkr",
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASSWORD,
             },
           });
 

@@ -1,16 +1,18 @@
 const express = require("express");
 const mysql = require("mysql2/promise");
 const crypto = require("crypto");
-const sendResetEmail = require("../mailer"); // Import the email function
+const sendResetEmail = require("../mailer"); 
+const dotenv = require('dotenv');
+dotenv.config();
 
 const router = express.Router();
 
 // MySQL Connection
 const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Divyam@05",
-  database: "dnstwister",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // Forgot Password Endpoint

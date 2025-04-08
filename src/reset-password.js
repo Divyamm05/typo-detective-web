@@ -2,13 +2,15 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const mysql = require("mysql");
 const router = express.Router();
+const dotenv = require('dotenv');
+dotenv.config();
 
 // Set up MySQL connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root", // Your MySQL user
-  password: "Divyam@05", // Your MySQL password
-  database: "dnstwister",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 router.post("/reset-password", (req, res) => {
