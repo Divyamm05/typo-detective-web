@@ -60,7 +60,9 @@ const ResetPassword = () => {
       {/* Navbar */}
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
+        <a href="/login" className="flex items-center">
           <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
+        </a>
         </div>
       </header>
 

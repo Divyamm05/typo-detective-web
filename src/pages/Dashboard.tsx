@@ -155,7 +155,9 @@ const Dashboard = () => {
     <div className="flex flex-col min-h-screen bg-background">
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert"/>
+        <a href="/dashboard" className="flex items-center">
+          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
+        </a>
 
           {/* Centered Heading */}
           <h1 className="text-lg font-semibold flex-grow text-center">
