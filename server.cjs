@@ -27,29 +27,57 @@ db.connect((err) => {
   console.log("MySQL Connected");
 });
 
+const bcrypt = require("bcrypt");
+
 // Signup route
 app.post("/signup", (req, res) => {
   const { email, password } = req.body;
-  const sql = "INSERT INTO users (email, password) VALUES (?, ?)";
-  db.query(sql, [email, password], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.status(200).send({ id: result.insertId, email });
+
+  // Hash the password
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      return res.status(500).send({ message: "Error hashing password" });
+    }
+
+    const sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+    db.query(sql, [email, hashedPassword], (err, result) => {
+      if (err) return res.status(500).send({ message: "Database error" });
+      res.status(200).send({ id: result.insertId, email });
+    });
   });
 });
 
-// Login route
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-  db.query(sql, [email, password], (err, results) => {
+
+  // Query to find the user by email
+  const sql = "SELECT * FROM users WHERE email = ?";
+  db.query(sql, [email], (err, results) => {
     if (err) return res.status(500).send(err);
+
+    // If no user is found
     if (results.length === 0) {
       return res.status(401).send("Invalid credentials");
     }
-    res.status(200).send({ id: results[0].customer_id, email });
+
+    // Get the user's hashed password from the database
+    const hashedPassword = results[0].password;
+
+    // Compare the provided password with the hashed password
+    bcrypt.compare(password, hashedPassword, (err, isMatch) => {
+      if (err) return res.status(500).send("Error comparing passwords");
+
+      // If the passwords match, return a success response
+      if (isMatch) {
+        return res.status(200).send({ id: results[0].customer_id, email });
+      } else {
+        return res.status(401).send("Invalid credentials");
+      }
+    });
   });
 });
 
+// Forgot password route
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   console.log(`[REQUEST] Forgot password for: ${email}`);
@@ -61,7 +89,6 @@ app.post("/forgot-password", async (req, res) => {
         return res.status(500).json({ message: "Database error" });
       }
 
-      console.log(`[DB] User lookup result:`, results);
       if (results.length === 0) {
         console.warn(`[WARN] Email not found: ${email}`);
         return res.status(404).json({ message: "Email not registered" });
@@ -81,10 +108,7 @@ app.post("/forgot-password", async (req, res) => {
             return res.status(500).json({ message: "Database update error" });
           }
 
-          console.log(`[DB] Token successfully stored for ${email}`);
-
           const resetLink = `http://localhost:8080/new-password?token=${resetToken}`;
-
           console.log(`[EMAIL] Reset link: ${resetLink}`);
 
           const transporter = nodemailer.createTransport({
@@ -119,16 +143,15 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
-
 // Reset Password Route
-app.post("/reset-password", (req, res) => {
+app.post("/reset-password", async (req, res) => {
   const { token, newPassword } = req.body;
 
   // Check token in DB
   db.query(
     "SELECT email FROM users WHERE reset_token = ? AND reset_token_expires > NOW()",
     [token],
-    (err, results) => {
+    async (err, results) => {
       if (err) return res.status(500).json({ message: "Database error" });
 
       if (results.length === 0) {
@@ -137,10 +160,13 @@ app.post("/reset-password", (req, res) => {
 
       const email = results[0].email;
 
+      // Hash the new password before storing it
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
       // Update password and clear token
       db.query(
         "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE email = ?",
-        [newPassword, email],
+        [hashedPassword, email],
         (updateErr) => {
           if (updateErr) return res.status(500).json({ message: "Error updating password" });
 
@@ -151,7 +177,8 @@ app.post("/reset-password", (req, res) => {
   );
 });
 
-app.post("/update-password", (req, res) => {
+// Update Password Route
+app.post("/update-password", async (req, res) => {
   const { token, newPassword } = req.body;
 
   if (!token || !newPassword) {
@@ -162,7 +189,7 @@ app.post("/update-password", (req, res) => {
   db.query(
     "SELECT email FROM users WHERE reset_token = ? AND reset_token_expires > NOW()",
     [token],
-    (err, results) => {
+    async (err, results) => {
       if (err) return res.status(500).json({ message: "Database error" });
 
       if (results.length === 0) {
@@ -171,10 +198,13 @@ app.post("/update-password", (req, res) => {
 
       const email = results[0].email;
 
+      // Hash the new password before storing it
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
       // Update the password and clear the reset token
       db.query(
         "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE email = ?",
-        [newPassword, email],
+        [hashedPassword, email],
         (updateErr) => {
           if (updateErr) return res.status(500).json({ message: "Error updating password" });
 
@@ -184,7 +214,6 @@ app.post("/update-password", (req, res) => {
     }
   );
 });
-
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
