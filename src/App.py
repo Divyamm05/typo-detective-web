@@ -6,7 +6,11 @@ import asyncio
 import aiohttp
 import random
 import itertools
-import random
+import sys
+
+if sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 
 app = Flask(__name__)
 CORS(app)
@@ -49,7 +53,7 @@ async def get_ip_country(ip, session):
     except Exception:
         return "Unknown"
 
-def generate_variations(domain, max_variations=10000):
+def generate_variations(domain, max_variations=1000):
     extracted = tldextract.extract(domain)
     base_name = extracted.domain
     tld = extracted.suffix
@@ -199,7 +203,7 @@ def stream_dns_lookup(domain):
         yield f"meta: {json.dumps({'total': total})}\n\n"
 
         async with aiohttp.ClientSession() as session:
-            batch_size = 100
+            batch_size = 30
             for i in range(0, total, batch_size):
                 batch = variations[i:i + batch_size]
                 tasks = [lookup_single_domain(session, domain, perm_type) for domain, perm_type in batch]
