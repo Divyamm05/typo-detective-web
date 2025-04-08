@@ -151,6 +151,40 @@ app.post("/reset-password", (req, res) => {
   );
 });
 
+app.post("/update-password", (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ message: "Missing token or password" });
+  }
+
+  // Check token in DB and validate if it's still within the expiration time
+  db.query(
+    "SELECT email FROM users WHERE reset_token = ? AND reset_token_expires > NOW()",
+    [token],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: "Database error" });
+
+      if (results.length === 0) {
+        return res.status(400).json({ message: "Invalid or expired token." });
+      }
+
+      const email = results[0].email;
+
+      // Update the password and clear the reset token
+      db.query(
+        "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE email = ?",
+        [newPassword, email],
+        (updateErr) => {
+          if (updateErr) return res.status(500).json({ message: "Error updating password" });
+
+          res.status(200).json({ message: "Password updated successfully." });
+        }
+      );
+    }
+  );
+});
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

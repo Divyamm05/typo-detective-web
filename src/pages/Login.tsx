@@ -36,7 +36,7 @@ const Login = () => {
   };
 
   const handleSignup = async (email: string, password: string) => {
-    const res = await fetch("http://localhost:5000/signup", {
+    const res = await fetch("http://localhost:5002/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

@@ -6,7 +6,6 @@ import asyncio
 import aiohttp
 import random
 import datetime
-import itertools
 import sys
 
 if sys.platform.startswith('win'):

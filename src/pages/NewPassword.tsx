@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+
 
 const NewPassword = () => {
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ const NewPassword = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/reset-password", {
+      const res = await fetch("http://localhost:5002/update-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
@@ -97,6 +99,13 @@ const NewPassword = () => {
             disabled={isLoading}
           >
             {isLoading ? "Resetting..." : "Reset Password"}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full mt-2 text-blue-600 hover:underline"
+            onClick={() => navigate("/login")}
+          >
+            Back to Login
           </Button>
         </div>
       </main>
