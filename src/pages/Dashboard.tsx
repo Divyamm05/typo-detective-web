@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<DomainResult[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
+  const [attemptedCount, setAttemptedCount] = useState(0);
   const [totalPermutations, setTotalPermutations] = useState(0);
 
   const handleLogout = async () => {
@@ -86,6 +87,7 @@ const Dashboard = () => {
     setIsAnalyzing(true);
     setResults([]);
     setProcessedCount(0);
+    setAttemptedCount(0);
     setTotalPermutations(0);
     toast({
       title: "Fetching DNS data...",
@@ -118,12 +120,14 @@ const Dashboard = () => {
               const result: DomainResult = JSON.parse(jsonStr);
               setResults(prev => [...prev, result]);
               setProcessedCount(prev => prev + 1);
+              setAttemptedCount(prev => prev + 1); // increment on every response attempt (success or fail)
             } catch (err) {
               console.warn("Invalid JSON chunk:", jsonStr);
             }
           } else if (line.startsWith("meta:")) {
             const meta = JSON.parse(line.replace("meta:", "").trim());
             if (meta.total) setTotalPermutations(meta.total);
+            if (meta.attempted) setAttemptedCount(meta.attempted);
           }
         }
 
@@ -201,16 +205,19 @@ const Dashboard = () => {
       {isAnalyzing && (
         <div className="mt-4">
           <p className="text-sm mb-2 text-gray-500">
-            Processed {processedCount} {totalPermutations ? `of ${totalPermutations}` : ""}
+            Scanning {attemptedCount} {totalPermutations ? `of ${totalPermutations}` : ""}
           </p>
-          <Progress value={totalPermutations ? (processedCount / totalPermutations) * 100 : undefined} />
+          <Progress
+            value={totalPermutations ? (attemptedCount / totalPermutations) * 100 : undefined}
+            className="bg-gray-200 rounded-full h-4 [&>div]:bg-blue-600"
+          />
         </div>
       )}
       {!isAnalyzing && results.length > 0 && (
-              <p className="text-sm text-gray-600 mt-4">
-                Scanned {totalPermutations} permutations.
-              </p>
-            )}
+        <p className="text-sm text-gray-600 mt-4">
+          Scanned {totalPermutations} permutations. Found {results.length} registered.
+        </p>
+      )}
     </CardContent>
   </Card>
 

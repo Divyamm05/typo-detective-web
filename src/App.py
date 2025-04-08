@@ -5,6 +5,7 @@ import tldextract
 import asyncio
 import aiohttp
 import random
+import datetime
 import itertools
 import sys
 
@@ -161,16 +162,35 @@ def generate_variations(domain, max_variations=1000):
     if max_variations and len(variations) > max_variations:
         return random.sample(list(variations), max_variations)
 
+    # Deduplicate variations by domain only
+    seen = set()
+    unique_variations = []
+    for domain, var_type in variations:
+        if domain not in seen:
+            seen.add(domain)
+            unique_variations.append((domain, var_type))
+
+    variations = unique_variations
     return list(variations)
 
 # Async lookup
 async def lookup_single_domain(session, domain, perm_type):
+    # Directly try DNS queries (skip WHOIS for performance)
     ip_task = query_dns(session, domain, "A")
     ipv6_task = query_dns(session, domain, "AAAA")
     ns_task = query_dns(session, domain, "NS")
     mx_task = query_dns(session, domain, "MX")
 
     ip, ipv6, ns, mx = await asyncio.gather(ip_task, ipv6_task, ns_task, mx_task)
+
+    # If no DNS records at all, consider it inactive/unregistered
+    if not any([ip, ipv6, ns, mx]):
+        return {
+            "permutation": domain,
+            "permutationType": perm_type,
+            "error": "No DNS records"
+        }
+
     country = await get_ip_country(ip[0], session) if ip else "Unknown"
 
     return {
@@ -204,39 +224,61 @@ def stream_dns_lookup(domain):
 
         async with aiohttp.ClientSession() as session:
             batch_size = 30
+            timeout_seconds = 3  # timeout per domain
             for i in range(0, total, batch_size):
                 batch = variations[i:i + batch_size]
-                tasks = [lookup_single_domain(session, domain, perm_type) for domain, perm_type in batch]
+                batch_domains = [domain for domain, _ in batch]
+                print(f"[{datetime.datetime.now()}] Processing batch {i//batch_size + 1} ({len(batch_domains)} domains):")
+                print(", ".join(batch_domains))
+
+                async def safe_lookup(domain, perm_type):
+                    try:
+                        return await asyncio.wait_for(lookup_single_domain(session, domain, perm_type), timeout=timeout_seconds)
+                    except asyncio.TimeoutError:
+                        return {"permutation": domain, "permutationType": perm_type, "error": "Timeout"}
+                    except Exception as e:
+                        return {"permutation": domain, "permutationType": perm_type, "error": str(e)}
+
+                tasks = [safe_lookup(domain, perm_type) for domain, perm_type in batch]
 
                 try:
                     results = await asyncio.gather(*tasks, return_exceptions=True)
                     for result in results:
                         if isinstance(result, Exception):
                             continue
-                        domain_key = result["permutation"]
-                        if domain_key not in seen_domains:
-                            scanned += 1
-                            seen_domains.add(domain_key)
 
-                            # Basic filter: ignore placeholder or empty NS responses
-                            placeholder_ns_keywords = ["suspended", "parked", "default", "placeholder", "example"]
+                        domain_key = result["permutation"]
+
+                        # Skip if domain is unregistered
+                        if "error" in result and result["error"] in ["Not registered", "No DNS records"]:
+                            scanned += 1
+                            yield f"meta: {json.dumps({'attempted': scanned})}\n\n"
+                            continue
+
+                        if domain_key not in seen_domains:
+                            seen_domains.add(domain_key)
+                            scanned += 1
+
+                            yield f"meta: {json.dumps({'attempted': scanned})}\n\n"
 
                             def is_valid_nameserver(ns):
                                 if not ns or ns == "-":
                                     return False
                                 ns_lower = ns.lower()
+                                placeholder_ns_keywords = ["suspended", "parked", "default", "placeholder", "example"]
                                 return not any(keyword in ns_lower for keyword in placeholder_ns_keywords)
 
-                            is_registered = is_valid_nameserver(result["nameServer"])
+                            is_registered = is_valid_nameserver(result.get("nameServer", ""))
 
                             if is_registered and domain_key not in registered_domains:
                                 registered += 1
                                 registered_domains.add(domain_key)
 
-
                             result["progress"] = f"Processed {scanned} of {total}"
                             yield f"data: {json.dumps(result)}\n\n"
-                except Exception:
+
+                except Exception as e:
+                    print(f"Error in batch {i//batch_size + 1}: {e}")
                     continue
 
         summary = {
