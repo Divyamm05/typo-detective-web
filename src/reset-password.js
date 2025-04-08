@@ -7,8 +7,8 @@ const router = express.Router();
 const db = mysql.createConnection({
   host: "localhost",
   user: "root", // Your MySQL user
-  password: "", // Your MySQL password
-  database: "your_database_name",
+  password: "Divyam@05", // Your MySQL password
+  database: "dnstwister",
 });
 
 router.post("/reset-password", (req, res) => {

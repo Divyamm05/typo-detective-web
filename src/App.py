@@ -199,7 +199,7 @@ def stream_dns_lookup(domain):
         yield f"meta: {json.dumps({'total': total})}\n\n"
 
         async with aiohttp.ClientSession() as session:
-            batch_size = 30
+            batch_size = 100
             for i in range(0, total, batch_size):
                 batch = variations[i:i + batch_size]
                 tasks = [lookup_single_domain(session, domain, perm_type) for domain, perm_type in batch]
