@@ -71,6 +71,15 @@ def generate_variations(domain, max_variations=1000):
             if base_name[i] != char:
                 variations.add((f"{base_name[:i] + char + base_name[i+1:]}.{tld}", "Replacement"))
 
+    # Addition (prefix/suffix)
+    additions = ["login", "secure", "app", "store", "web", "site", "my", "online", "home", "cloud",
+             "account", "dashboard", "portal", "checkout", "signin"]
+    for add in additions:
+        # Prefix
+        variations.add((f"{add}{base_name}.{tld}", "Addition"))
+        # Suffix
+        variations.add((f"{base_name}{add}.{tld}", "Addition"))
+
     # Insertion (expanded set)
     insertion_chars = "abcdefghijklmnopqrstuvwxyz0123456789"
     for i in range(len(base_name) + 1):
@@ -87,12 +96,27 @@ def generate_variations(domain, max_variations=1000):
         swapped[i], swapped[i+1] = swapped[i+1], swapped[i]
         variations.add((f"{''.join(swapped)}.{tld}", "Transposition"))
 
+        # Plural
+    if not base_name.endswith("s"):
+        variations.add((f"{base_name}s.{tld}", "Plural"))
+        if base_name.endswith(("sh", "ch", "x", "z", "s")):
+            variations.add((f"{base_name}es.{tld}", "Plural"))
+
+
     # Homoglyphs (expanded)
-    homoglyph_map = {"o": "0", "l": "1", "e": "3", "a": "4", "s": "5", "t": "7", "b": "8", "g": "9", "i": "!", "z": "2"}
+    homoglyph_map = {
+    "o": "0ø", "l": "1|", "e": "3€", "a": "4@", "s": "5$", "t": "7+", 
+    "b": "8ß", "g": "9", "i": "!|", "z": "2"
+    }
     for i in range(len(base_name)):
         if base_name[i] in homoglyph_map:
             homoglyphed = base_name[:i] + homoglyph_map[base_name[i]] + base_name[i+1:]
             variations.add((f"{homoglyphed}.{tld}", "Homoglyph"))
+
+    # Double repetition
+    for i in range(len(base_name)):
+        variations.add((f"{base_name[:i+1] + base_name[i]*2 + base_name[i+1:]}.{tld}", "Double-Repetition"))
+
 
     # Bitsquatting
     def flip_bit(c, bit):
@@ -131,7 +155,7 @@ def generate_variations(domain, max_variations=1000):
                 variations.add((f"{proximity}.{tld}", "Keyboard-Proximity"))
 
     # TLD Swap (more variants)
-    tld_variations = ["com", "net", "org", "info", "biz", "co", "io", "ai", "app"]
+    tld_variations = ["com", "net", "org", "info", "biz", "co", "io", "ai", "app", "in"]
     for new_tld in tld_variations:
         if new_tld != tld:
             variations.add((f"{base_name}.{new_tld}", "TLD-Swap"))
@@ -153,7 +177,7 @@ def generate_variations(domain, max_variations=1000):
             variations.add((f"{typo}.{tld}", "Dictionary"))
 
     # Shuffle (more)
-    for _ in range(30):
+    for _ in range(120):
         shuffled = list(base_name)
         random.shuffle(shuffled)
         variations.add((f"{''.join(shuffled)}.{tld}", "Shuffle"))
