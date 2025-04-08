@@ -93,13 +93,15 @@ const NewPassword = () => {
             required
             className="mb-4"
           />
-          <Button
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleResetPassword}
-            disabled={isLoading}
-          >
-            {isLoading ? "Resetting..." : "Reset Password"}
-          </Button>
+          <form onSubmit={handleResetPassword}>
+            <Button
+              type="submit"
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
           <Button
             variant="ghost"
             className="w-full mt-2 text-blue-600 hover:underline"

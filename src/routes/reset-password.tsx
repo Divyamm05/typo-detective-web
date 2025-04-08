@@ -140,7 +140,6 @@ const ResetPassword = () => {
             >
               {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
-
             <Button
               variant="ghost"
               className="w-full mt-2 text-blue-600 hover:underline"

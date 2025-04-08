@@ -123,11 +123,32 @@ app.post("/forgot-password", async (req, res) => {
           });
 
           const mailOptions = {
-            from: "divyam.hs@somaiya.edu",
+            from: process.env.EMAIL_USER,
             to: email,
-            subject: "Password Reset",
-            html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
-          };
+            subject: "Password Reset Request",
+            html: `
+              <html>
+                <body>
+                  <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.5;">
+                    <h2>Password Reset Request</h2>
+                    <p>Hello,</p>
+                    <p>We received a request to reset the password for your account associated with <strong>${email}</strong>.</p>
+                    <p>If you didn't request a password reset, please ignore this email. If you'd like to proceed with the password reset, please click the link below:</p>
+                    <p style="text-align: center;">
+                      <a href="${resetLink}" style="background-color: #007BFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset My Password</a>
+                    </p>
+                    <p>This link will expire in 1 hour.</p>
+                    <br />
+                    <p>Best regards,</p>
+                    <p>The Support Team</p>
+                    <footer style="font-size: 0.9em; color: #777;">
+                      <p>Note: This is an automated message. Please do not reply directly to this email.</p>
+                    </footer>
+                  </div>
+                </body>
+              </html>
+            `,
+          };  
 
           try {
             const info = await transporter.sendMail(mailOptions);
