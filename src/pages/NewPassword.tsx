@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 
 const NewPassword = () => {
@@ -24,7 +23,9 @@ const NewPassword = () => {
     return null;
   }
 
-  const handleResetPassword = async () => {
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent the default form submission
+
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -77,23 +78,23 @@ const NewPassword = () => {
           <p className="text-center text-gray-600 mb-4">
             Enter a new password for your account.
           </p>
-          <Input
-            type="password"
-            placeholder="New Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mb-4"
-          />
-          <Input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="mb-4"
-          />
           <form onSubmit={handleResetPassword}>
+            <Input
+              type="password"
+              placeholder="New Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mb-4"
+            />
+            <Input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mb-4"
+            />
             <Button
               type="submit"
               className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
@@ -102,6 +103,7 @@ const NewPassword = () => {
               {isLoading ? "Resetting..." : "Reset Password"}
             </Button>
           </form>
+
           <Button
             variant="ghost"
             className="w-full mt-2 text-blue-600 hover:underline"
@@ -119,6 +121,7 @@ const NewPassword = () => {
     </div>
   );
 };
+
 
 
 export default NewPassword;

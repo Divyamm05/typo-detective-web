@@ -10,7 +10,8 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleResetRequest = async () => {
+  const handleResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent the default form submission behavior
     console.log("Reset request initiated."); // Log when reset request is initiated
     if (!email.trim()) {
       toast({
@@ -70,20 +71,26 @@ const ResetPassword = () => {
           <p className="text-center text-gray-600 mb-4">
             Enter your registered email to receive a reset link.
           </p>
-          <Input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleResetRequest}
-            disabled={isLoading}
-          >
-            {isLoading ? "Sending..." : "Send Reset Link"}
-          </Button>
+          
+          {/* Form element to handle reset password request */}
+          <form onSubmit={handleResetRequest}>
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mb-4"
+            />
+            <Button
+              type="submit"  // Set the button to trigger form submission
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? "Sending..." : "Send Reset Link"}
+            </Button>
+          </form>
+
           <Button
             variant="ghost"
             className="w-full mt-2 text-blue-600 hover:underline"

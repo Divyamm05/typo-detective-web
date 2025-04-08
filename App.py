@@ -251,8 +251,6 @@ def stream_dns_lookup(domain):
             for i in range(0, total, batch_size):
                 batch = variations[i:i + batch_size]
                 batch_domains = [domain for domain, _ in batch]
-                print(f"[{datetime.datetime.now()}] Processing batch {i//batch_size + 1} ({len(batch_domains)} domains):")
-                print(", ".join(batch_domains))
 
                 async def safe_lookup(domain, perm_type):
                     try:
