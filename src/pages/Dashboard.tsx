@@ -17,6 +17,7 @@ type DomainResult = {
   country: string;
   nameServer: string;
   mailServer: string;
+  error?: string;
 };
 
 const Dashboard = () => {
@@ -118,9 +119,11 @@ const Dashboard = () => {
             const jsonStr = line.replace("data:", "").trim();
             try {
               const result: DomainResult = JSON.parse(jsonStr);
-              setResults(prev => [...prev, result]);
+              if (result.permutation) {
+                setResults(prev => [...prev, result]);
+              }
               setProcessedCount(prev => prev + 1);
-              setAttemptedCount(prev => prev + 1); // increment on every response attempt (success or fail)
+              setAttemptedCount(prev => prev + 1); 
             } catch (err) {
               console.warn("Invalid JSON chunk:", jsonStr);
             }
@@ -248,36 +251,57 @@ const Dashboard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((result, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <div className="font-semibold">
-                    <a
-                      href={`http://${result.permutation}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {result.permutation}
-                    </a>
-                  </div>
-                  <div className="text-xs text-gray-500">{result.permutationType}</div>
-                </TableCell>
-                <TableCell>
-                  <div>{result.ip}</div>
-                  <div>{result.ipv6}</div>  
-                  <div className="text-xs text-gray-500">{result.country}</div>
-                </TableCell>
-                <TableCell>{result.nameServer}</TableCell>
-                <TableCell>{result.mailServer}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
-  )}
-</main>
+  {results.map((result, index) => {
+    const isError = !!result.error;
+
+          return (
+            <TableRow key={index}>
+              {/* Domain + Type */}
+              <TableCell>
+                <div className="font-semibold">
+                  <a
+                    href={`http://${result.permutation}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {result.permutation}
+                  </a>
+                </div>
+                <div className="text-xs text-gray-500">{result.permutationType}</div>
+              </TableCell>
+
+              {/* IP Address */}
+              <TableCell>
+                {isError ? (
+                  <span className="text-sm">🚫</span>
+                ) : (
+                  <>
+                    <div>{result.ip || "-"}</div>
+                    <div>{result.ipv6 || "-"}</div>
+                    <div className="text-xs text-gray-500">{result.country || "-"}</div>
+                  </>
+                )}
+              </TableCell>
+
+              {/* Name Server */}
+              <TableCell>
+                {result.nameServer}
+              </TableCell>
+
+              {/* Mail Server */}
+              <TableCell>
+                {result.mailServer}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>  
+              </Table>
+            </div>
+          </>
+        )}
+    </main>
 
   
       {/* Sticky Footer */}
