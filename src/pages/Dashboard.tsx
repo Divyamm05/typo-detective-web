@@ -8,6 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress"; 
 import { Download, Share } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
 
 type DomainResult = {
   permutation: string;
@@ -30,6 +36,8 @@ const Dashboard = () => {
   const [processedCount, setProcessedCount] = useState(0);
   const [attemptedCount, setAttemptedCount] = useState(0);
   const [totalPermutations, setTotalPermutations] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all"); // "all", "registered", "error", or any permutationType
 
   const handleLogout = async () => {
     await logout();
@@ -64,6 +72,32 @@ const Dashboard = () => {
     URL.revokeObjectURL(url);
   };
 
+  const getPermutationExplanation = (type: string) => {
+    const explanations: Record<string, string> = {
+      Omission: "A character is removed from the domain (e.g. exmple.com).",
+      Replacement: "A character is replaced with a nearby key (e.g. ezample.com).",
+      Insertion: "An extra character is inserted (e.g. exaample.com).",
+      Repetition: "A character is repeated (e.g. exaample.com).",
+      "Double-Repetition": "Two or more characters are repeatedly typed (e.g. exaaample.com).",
+      Transposition: "Two characters are swapped (e.g. examlpe.com).",
+      Homoglyph: "A character is replaced with a similar-looking one (e.g. examp1e.com).",
+      Bitsquatting: "A domain with a single bit error in a character (e.g. ezample.com).",
+      "TLD-Swap": "The top-level domain is changed (e.g. example.net instead of .com).",
+      Subdomain: "A subdomain is added (e.g. mail.example.com).",
+      "Keyboard-Proximity": "A typo based on keyboard layout (e.g. exanple.com).",
+      "Double-Swap": "Two adjacent characters are swapped and repeated (e.g. examlpe.com).",
+      Shuffle: "Characters in the domain are randomly shuffled.",
+      Dictionary: "A known phishing word is added to the domain.",
+      "Vowel-Swap": "A vowel is swapped with another vowel (e.g. exemple.com).",
+      Addition: "An extra word or token is added to the domain (e.g. login-example.com).",
+      Hyphenation: "A hyphen is added or removed (e.g. ex-ample.com).",
+      Original: "The original domain name (no mutation).",
+    };
+  
+    return explanations[type] || "A variation of the domain.";
+  };
+  
+
   const analyzeDomain = async () => {
     if (!domain.trim()) {
       toast({
@@ -73,6 +107,7 @@ const Dashboard = () => {
       });
       return;
     }
+
   
     const cleanDomain = domain.trim().toLowerCase();
     const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)+[a-zA-Z]{2,}$/;
@@ -228,31 +263,99 @@ const Dashboard = () => {
 
   {results.length > 0 && (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold"></h2>
-        <div className="flex gap-2">
-          <Button onClick={downloadAsCSV} variant="outline">
-            <Download className="w-4 h-4 mr-1" /> CSV
-          </Button>
-          <Button onClick={downloadAsJSON} variant="outline">
-            <Download className="w-4 h-4 mr-1" /> JSON
-          </Button>
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 flex-wrap">
+          {/* Search input */}
+          <Input
+            type="text"
+            placeholder="Search a domain from results"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="md:w-1/3"
+          />
+          <div className="flex gap-2">
+          {/* Filter dropdown */}
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-background md:w-1/2"
+          >
+            <option value="all">All Results</option>
+            {[...new Set(results.map(r => r.permutationType))]
+              .filter(type => type)
+              .map((type, idx) => (
+                <option key={idx} value={type}>
+                  {type}
+                </option>
+              ))}
+          </select>
+
+          {/* Download buttons */}
+
+            <Button onClick={downloadAsCSV} variant="outline">
+              <Download className="w-4 h-4 mr-1" /> CSV
+            </Button>
+            <Button onClick={downloadAsJSON} variant="outline">
+              <Download className="w-4 h-4 mr-1" /> JSON
+            </Button>
+          </div>
         </div>
-      </div>
 
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Permutation</TableHead>
-              <TableHead>IP Address</TableHead>
-              <TableHead>Name Server</TableHead>
-              <TableHead>Mail Server</TableHead>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TableHead>Permutation</TableHead>
+              </TooltipTrigger>
+              <TooltipContent>
+                The modified domain being analyzed.
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TableHead>IP Address</TableHead>
+              </TooltipTrigger>
+              <TooltipContent>
+                The domain’s resolved IPv4 and IPv6 addresses, along with its geolocated country.
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TableHead>Name Server</TableHead>
+              </TooltipTrigger>
+              <TooltipContent>
+                The authoritative name servers for the domain (via NS record).
+              </TooltipContent>
+            </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TableHead>Mail Server</TableHead>
+                </TooltipTrigger>
+                <TooltipContent>
+                  The mail servers handling email for the domain (via MX record).
+                </TooltipContent>
+              </Tooltip>
+              
             </TableRow>
           </TableHeader>
           <TableBody>
-  {results.map((result, index) => {
-    const isError = !!result.error;
+          {results
+          .filter((result) => {
+            const matchesSearch = result.permutation.toLowerCase().includes(searchTerm.toLowerCase());
+            const isError = !!result.error;
+
+            if (filterType === "all") return matchesSearch;
+            if (filterType === "registered") return matchesSearch && !isError;
+            if (filterType === "error") return matchesSearch && isError;
+            return matchesSearch && result.permutationType === filterType;
+          })
+          .map((result, index) => {
+              const isError = !!result.error;
 
           return (
             <TableRow key={index}>
@@ -268,7 +371,14 @@ const Dashboard = () => {
                     {result.permutation}
                   </a>
                 </div>
-                <div className="text-xs text-gray-500">{result.permutationType}</div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-xs text-gray-500">{result.permutationType}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {getPermutationExplanation(result.permutationType)}
+                  </TooltipContent>
+                </Tooltip>
               </TableCell>
 
               {/* IP Address */}
