@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress"; 
 import { Download, Share } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipTrigger,
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [domain, setDomain] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<DomainResult[]>([]);
+  const [loadingResults, setLoadingResults] = useState(true); // or from props
   const [processedCount, setProcessedCount] = useState(0);
   const [attemptedCount, setAttemptedCount] = useState(0);
   const [totalPermutations, setTotalPermutations] = useState(0);
@@ -97,6 +99,13 @@ const Dashboard = () => {
     return explanations[type] || "A variation of the domain.";
   };
   
+  const LoadingRow = () => (
+    <tr>
+      <td><Skeleton className="h-4 w-[150px]" /></td>
+      <td><Skeleton className="h-4 w-[100px]" /></td>
+      <td><Skeleton className="h-4 w-[120px]" /></td>
+    </tr>
+  );
 
   const analyzeDomain = async () => {
     if (!domain.trim()) {
@@ -340,10 +349,22 @@ const Dashboard = () => {
                   The mail servers handling email for the domain (via MX record).
                 </TooltipContent>
               </Tooltip>
-              
+
             </TableRow>
           </TableHeader>
           <TableBody>
+          {loadingResults && results.length === 0 && (
+            <>
+              {[...Array(5)].map((_, idx) => (
+                <TableRow key={`loading-${idx}`}>
+                  <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                </TableRow>
+              ))}
+            </>
+          )}
           {results
           .filter((result) => {
             const matchesSearch = result.permutation.toLowerCase().includes(searchTerm.toLowerCase());
