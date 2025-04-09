@@ -64,7 +64,7 @@ def generate_variations(domain, max_variations=1000):
         variations.add((f"{base_name[:i] + base_name[i+1:]}.{tld}", "Omission"))
 
     # Replacement (expanded set)
-    replacement_chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+    replacement_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
     for i in range(len(base_name)):
         for char in replacement_chars:
             if base_name[i] != char:
@@ -72,7 +72,8 @@ def generate_variations(domain, max_variations=1000):
 
     # Addition (prefix/suffix)
     additions = ["login", "secure", "app", "store", "web", "site", "my", "online", "home", "cloud",
-             "account", "dashboard", "portal", "checkout", "signin"]
+             "account", "dashboard", "portal", "checkout", "signin", "verify", "access", "system",
+             "manage", "control", "update", "confirm", "security", "auth", "connect", "client"]
     for add in additions:
         # Prefix
         variations.add((f"{add}{base_name}.{tld}", "Addition"))
@@ -154,7 +155,7 @@ def generate_variations(domain, max_variations=1000):
                 variations.add((f"{proximity}.{tld}", "Keyboard-Proximity"))
 
     # TLD Swap (more variants)
-    tld_variations = ["com", "net", "org", "info", "biz", "co", "io", "ai", "app", "in"]
+    tld_variations = ["com", "net", "org", "info", "biz", "co", "io", "ai", "app", "in", "xyz", "site", "tech", "dev", "me", "us", "store", "online"]
     for new_tld in tld_variations:
         if new_tld != tld:
             variations.add((f"{base_name}.{new_tld}", "TLD-Swap"))
