@@ -116,7 +116,7 @@ const ResetPassword = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <header className="bg-blue-600 text-white shadow-md">
           <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-            <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
+            <img src="/newlogo.png" alt="Connect Reseller logo" className="h-10 filter brightness-0 invert" />
           </div>
         </header>
 
@@ -162,7 +162,7 @@ const ResetPassword = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-          <img src="/newlogo.png" alt="Typo Detective Logo" className="h-10 filter brightness-0 invert" />
+          <img src="/newlogo.png" alt="Connect Reseller logo" className="h-10 filter brightness-0 invert" />
         </div>
       </header>
 
