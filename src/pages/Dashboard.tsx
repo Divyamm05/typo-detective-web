@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useRef } from "react";
 
 
 type DomainResult = {
@@ -40,6 +41,9 @@ const Dashboard = () => {
   const [totalPermutations, setTotalPermutations] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all"); // "all", "registered", "error", or any permutationType
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+
+  const readerRef = useRef<ReadableStreamDefaultReader | null>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -108,6 +112,17 @@ const Dashboard = () => {
   );
 
   const analyzeDomain = async () => {
+    if (isAnalyzing) {
+      // If already analyzing, stop the stream
+      readerRef.current?.cancel();
+      setIsAnalyzing(false);
+      toast({
+        title: "Analysis stopped",
+        description: "You stopped the domain analysis.",
+      });
+      return;
+    }
+  
     if (!domain.trim()) {
       toast({
         title: "Error",
@@ -116,7 +131,6 @@ const Dashboard = () => {
       });
       return;
     }
-
   
     const cleanDomain = domain.trim().toLowerCase();
     const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)+[a-zA-Z]{2,}$/;
@@ -134,6 +148,7 @@ const Dashboard = () => {
     setProcessedCount(0);
     setAttemptedCount(0);
     setTotalPermutations(0);
+  
     toast({
       title: "Fetching DNS data...",
       description: `Querying ${cleanDomain}`,
@@ -142,11 +157,11 @@ const Dashboard = () => {
     try {
       const response = await fetch(`http://127.0.0.1:5001/stream_dns_lookup?domain=${encodeURIComponent(cleanDomain)}`);
   
-      if (!response.body) {
-        throw new Error("No response body from server");
-      }
+      if (!response.body) throw new Error("No response body from server");
   
       const reader = response.body.getReader();
+      readerRef.current = reader;
+  
       const decoder = new TextDecoder("utf-8");
       let buffer = "";
   
@@ -155,10 +170,11 @@ const Dashboard = () => {
         if (done) break;
   
         buffer += decoder.decode(value, { stream: true });
-  
         const parts = buffer.split("\n\n");
+  
         for (let i = 0; i < parts.length - 1; i++) {
           const line = parts[i].trim();
+  
           if (line.startsWith("data:")) {
             const jsonStr = line.replace("data:", "").trim();
             try {
@@ -167,7 +183,7 @@ const Dashboard = () => {
                 setResults(prev => [...prev, result]);
               }
               setProcessedCount(prev => prev + 1);
-              setAttemptedCount(prev => prev + 1); 
+              setAttemptedCount(prev => prev + 1);
             } catch (err) {
               console.warn("Invalid JSON chunk:", jsonStr);
             }
@@ -177,24 +193,27 @@ const Dashboard = () => {
             if (meta.attempted) setAttemptedCount(meta.attempted);
           }
         }
-
+  
         buffer = parts[parts.length - 1];
       }
-
+  
       toast({
         title: "Analysis complete",
         description: `Fetched DNS data for ${cleanDomain}`,
       });
   
     } catch (error: any) {
-      setResults([]);
-      toast({
-        title: "Error",
-        description: `Failed to fetch DNS data: ${error.message}`,
-        variant: "destructive",
-      });
+      if (error?.message !== "The user aborted a request.") {
+        setResults([]);
+        toast({
+          title: "Error",
+          description: `Failed to fetch DNS data: ${error.message}`,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsAnalyzing(false);
+      readerRef.current = null;
     }
   };
   
@@ -242,13 +261,13 @@ const Dashboard = () => {
           onChange={(e) => setDomain(e.target.value)} 
           disabled={isAnalyzing} 
         />
-        <Button 
-          type="submit" 
-          disabled={isAnalyzing} 
-          className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {isAnalyzing ? "Analyzing..." : "Analyze Domain"}
-        </Button>
+      <Button 
+        type="submit"
+        className={`text-white ${isAnalyzing ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}`}
+      >
+        {isAnalyzing ? "Stop" : "Analyze Domain"}
+      </Button>
+
       </form>
 
       {isAnalyzing && (
