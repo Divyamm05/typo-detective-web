@@ -155,7 +155,7 @@ const Dashboard = () => {
     });
   
     try {
-      const response = await fetch(`http://127.0.0.1:5001/stream_dns_lookup?domain=${encodeURIComponent(cleanDomain)}`);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/stream_dns_lookup?domain=${encodeURIComponent(cleanDomain)}`);
   
       if (!response.body) throw new Error("No response body from server");
   

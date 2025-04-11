@@ -23,7 +23,7 @@ const Login = () => {
   const { toast } = useToast();
 
   const handleLogin = async (email: string, password: string) => {
-    const res = await fetch(`${process.env.FRONTEND_URL}/login`, {
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -36,7 +36,7 @@ const Login = () => {
   };
 
   const handleSignup = async (email: string, password: string) => {
-    const res = await fetch(`${process.env.FRONTEND_URL}/signup`, {
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -102,7 +102,7 @@ const Login = () => {
     }
   
     try {
-      const res = await fetch(`${process.env.FRONTEND_URL}/forgot-password`, {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

@@ -10,6 +10,13 @@ const admin = require("firebase-admin");
 
 dotenv.config();
 
+import cors from "cors";
+app.use(cors({
+  origin: "https://your-frontend.onrender.com",
+  credentials: true,
+}));
+
+
 // Firebase Admin SDK Init
 const path = require("path");
 const serviceAccount = require(path.join(__dirname, "src", "routes", "serviceAccountKey.json"));
@@ -84,7 +91,7 @@ app.post("/forgot-password", (req, res) => {
       async (err) => {
         if (err) return res.status(500).json({ message: "Failed to update token" });
 
-        const resetLink = `${process.env.FRONTEND_URL}/new-password?token=${token}`;
+        const resetLink = `${process.env.REACT_APP_BACKEND_URL}/new-password?token=${token}`;
 
         const transporter = nodemailer.createTransport({
           service: "gmail",
