@@ -1,65 +1,62 @@
-const express = require("express");
-const bcrypt = require("bcrypt");
-const mysql = require("mysql");
-const router = express.Router();
-const dotenv = require('dotenv');
+import express from "express";
+import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+import admin from "firebase-admin";
+import serviceAccount from "./serviceAccountKey.json"; 
+
 dotenv.config();
 
-// Set up MySQL connection
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const router = express.Router();
 
-router.post("/reset-password", (req, res) => {
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+const db = admin.firestore();
+console.log("[INIT] Firebase Firestore connected");
+
+// POST /reset-password
+router.post("/reset-password", async (req, res) => {
   const { token, newPassword } = req.body;
 
   if (!token || !newPassword) {
     return res.status(400).json({ message: "Token and new password are required." });
   }
 
-  // Fetch the user using the reset token
-  const query = `SELECT * FROM users WHERE reset_token = ?`;
-  db.query(query, [token], async (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "Database error." });
-    }
+  try {
+    // Find user with the matching reset token
+    const userSnapshot = await db.collection("users").where("reset_token", "==", token).get();
 
-    if (results.length === 0) {
+    if (userSnapshot.empty) {
       return res.status(404).json({ message: "Invalid or expired token." });
     }
 
-    const user = results[0];
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
 
-    // Check if the token has expired
-    const tokenExpiry = new Date(user.reset_token_expires);
+    const tokenExpiry = new Date(userData.reset_token_expires);
     if (tokenExpiry < new Date()) {
       return res.status(400).json({ message: "Token has expired." });
     }
 
     // Hash the new password
-    try {
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      // Update the password in the database
-      const updateQuery = `
-        UPDATE users 
-        SET password = ?, reset_token = NULL, reset_token_expires = NULL 
-        WHERE customer_id = ?`;
+    // Update user password and clear the token
+    await db.collection("users").doc(userDoc.id).update({
+      password: hashedPassword,
+      reset_token: admin.firestore.FieldValue.delete(),
+      reset_token_expires: admin.firestore.FieldValue.delete(),
+    });
 
-      db.query(updateQuery, [hashedPassword, user.customer_id], (err, result) => {
-        if (err) {
-          return res.status(500).json({ message: "Failed to update password." });
-        }
-
-        return res.status(200).json({ message: "Password updated successfully." });
-      });
-    } catch (error) {
-      return res.status(500).json({ message: "Error hashing password." });
-    }
-  });
+    return res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("[ERROR] Reset password failed:", error);
+    return res.status(500).json({ message: "Server error." });
+  }
 });
 
-module.exports = router;
+export default router;

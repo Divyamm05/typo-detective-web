@@ -1,47 +1,48 @@
-const express = require("express");
-const mysql = require("mysql2/promise");
-const crypto = require("crypto");
-const sendResetEmail = require("../mailer"); 
-const dotenv = require('dotenv');
-dotenv.config();
+import express from "express";
+import bcrypt from "bcrypt";
+import admin from "firebase-admin";
+import { db } from "../firebase.js"; // your firebase setup file
 
 const router = express.Router();
 
-// MySQL Connection
-const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+// POST /reset-password
+router.post("/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ message: "Missing token or password" });
+  }
+
+  try {
+    // 🔍 Look up user by reset token
+    const usersRef = db.collection("users");
+    const snapshot = await usersRef
+      .where("reset_token", "==", token)
+      .where("reset_token_expiry", ">", new Date())
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    const userDoc = snapshot.docs[0];
+    const userRef = userDoc.ref;
+
+    // 🔐 Hash the new password with bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // ✅ Update password and clear reset token info
+    await userRef.update({
+      password: hashedPassword,
+      reset_token: admin.firestore.FieldValue.delete(),
+      reset_token_expiry: admin.firestore.FieldValue.delete(),
+    });
+
+    return res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("[RESET ERROR]", error);
+    return res.status(500).json({ message: "Server error" });
+  }
 });
 
-// Forgot Password Endpoint
-router.post("/reset-password", async (req, res) => {
-    const { token, newPassword } = req.body;
-  
-    try {
-      // Validate token
-      const [users] = await db.query(
-        "SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()",
-        [token]
-      );
-  
-      if (users.length === 0) {
-        return res.status(400).json({ message: "Invalid or expired token" });
-      }
-  
-      // Hash new password (use bcrypt)
-      const hashedPassword = crypto.createHash("sha256").update(newPassword).digest("hex");
-  
-      // Update password in DB
-      await db.query("UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?", 
-        [hashedPassword, token]);
-  
-      res.json({ message: "Password reset successful" });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-module.exports = router;
+export default router;
