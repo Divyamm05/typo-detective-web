@@ -36,12 +36,6 @@ const Login = () => {
   };
 
   const handleSignup = async (email: string, password: string) => {
-    if (email === "aichatbot@iwantdemo.com" && password === "1234") {
-      const testUser = { email, token: "fake-token-for-testing" };
-      localStorage.setItem("user", JSON.stringify(testUser));
-      return;
-    }
-
     const res = await fetch("http://localhost:5002/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -108,7 +102,7 @@ const Login = () => {
     }
   
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/forgot-password`, {
+      const res = await fetch("http://localhost:5000/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
