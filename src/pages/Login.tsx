@@ -23,28 +23,18 @@ const Login = () => {
   const { toast } = useToast();
 
   const handleLogin = async (email: string, password: string) => {
-    const res = await fetch("http://localhost:5002/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) throw new Error("Login failed");
-
-    const user = await res.json();
-    localStorage.setItem("user", JSON.stringify(user));
+    if (email === "aichatbot@iwantdemo.com" && password === "1234") {
+      const user = { email };
+      localStorage.setItem("user", JSON.stringify(user));
+      return;
+    } else {
+      throw new Error("Invalid credentials");
+    }
   };
-
+  
   const handleSignup = async (email: string, password: string) => {
-    const res = await fetch("http://localhost:5002/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) throw new Error("Signup failed");
-
-    const user = await res.json();
+    // For mock signup, just store the user
+    const user = { email };
     localStorage.setItem("user", JSON.stringify(user));
   };
 
@@ -91,37 +81,6 @@ const Login = () => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast({
-        title: "Error",
-        description: "Please enter your email address first.",
-        variant: "destructive",
-      });
-      return;
-    }
-  
-    try {
-      const res = await fetch("http://localhost:5000/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-  
-      if (!res.ok) throw new Error("Failed to send reset email");
-  
-      toast({
-        title: "Reset Link Sent",
-        description: "Check your email for instructions.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
   
   return (
     <div className="min-h-screen flex flex-col bg-white">

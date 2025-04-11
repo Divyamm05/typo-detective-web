@@ -9,11 +9,10 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Extract token from URL on mount for reset password flow
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromURL = params.get("reset_token");
@@ -23,7 +22,6 @@ const ResetPassword = () => {
     }
   }, []);
 
-  // === FORGOT PASSWORD FLOW ===
   const handleResetRequest = async () => {
     if (!email.trim()) {
       toast({
@@ -51,7 +49,7 @@ const ResetPassword = () => {
       });
 
       navigate("/login");
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message,
@@ -62,7 +60,6 @@ const ResetPassword = () => {
     }
   };
 
-  // === RESET PASSWORD FLOW ===
   const handleResetPassword = async () => {
     if (!password.trim() || !confirmPassword.trim()) {
       toast({
@@ -98,8 +95,8 @@ const ResetPassword = () => {
         description: "Your password has been reset. You can now log in.",
       });
 
-      navigate("/login"); // Redirect user to login page
-    } catch (error: any) {
+      navigate("/login");
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message,
@@ -110,7 +107,6 @@ const ResetPassword = () => {
     }
   };
 
-  // If no token, show error message and don't render reset password form
   if (!token && !email) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
@@ -157,7 +153,6 @@ const ResetPassword = () => {
     );
   }
 
-  // Password reset flow
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <header className="bg-blue-600 text-white shadow-md">
@@ -168,9 +163,7 @@ const ResetPassword = () => {
 
       <main className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md bg-white shadow-lg p-6 rounded-lg border border-gray-200">
-          <h2 className="text-2xl font-bold text-center mb-4">
-            Set New Password
-          </h2>
+          <h2 className="text-2xl font-bold text-center mb-4">Set New Password</h2>
           <p className="text-center text-gray-600 mb-4">
             Enter a new password for your account.
           </p>

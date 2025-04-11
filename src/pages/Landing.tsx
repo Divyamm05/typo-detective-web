@@ -6,19 +6,27 @@ const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const handleNavigation = () => {
+    navigate(user ? "/dashboard" : "/login");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-        <a href="/" className="flex items-center">
-          <img src="/newlogo.png" alt="Connect Reseller logo" className="h-10 filter brightness-0 invert" />
-        </a>
+          <a href="/" className="flex items-center">
+            <img
+              src="/newlogo.png"
+              alt="Connect Reseller Homepage"
+              className="h-10 filter brightness-0 invert"
+            />
+          </a>
           <Button
             className="bg-white text-blue-600 hover:bg-gray-100"
-            onClick={() => navigate(user ? "/login" : "/login")}
+            onClick={handleNavigation}
           >
-            {user ? "Login / Sign Up" : "Login / Sign Up"}
+            {user ? "Go to Dashboard" : "Login / Sign Up"}
           </Button>
         </div>
       </header>
@@ -35,9 +43,9 @@ const Landing = () => {
           <Button
             size="lg"
             className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={() => navigate(user ? "/login" : "/login")}
+            onClick={handleNavigation}
           >
-            {user ? "Get Started" : "Get Started"}
+            {user ? "Go to Dashboard" : "Get Started"}
           </Button>
         </div>
       </main>
