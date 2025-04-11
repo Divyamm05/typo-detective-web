@@ -1,11 +1,19 @@
 import express from "express";
+import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-import bcrypt from "bcrypt";
-import admin from "firebase-admin";
-import { db } from "../firebase.js"; // Your Firebase setup file
+const dotenv = require('dotenv');
+dotenv.config();
 
 dotenv.config();
 const router = express.Router();
+
+// MySQL connection
+const db = await mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
 router.post("/update-password", async (req, res) => {
   const { token, newPassword } = req.body;
@@ -15,32 +23,28 @@ router.post("/update-password", async (req, res) => {
   }
 
   try {
-    // 🔍 Look up user with the given reset token
-    const usersRef = db.collection("customers");
-    const snapshot = await usersRef.where("reset_token", "==", token).get();
+    // Find user with matching token and check if it's still valid
+    const [rows] = await db.execute(
+      "SELECT customer_id, reset_token_expires FROM customers WHERE reset_token = ?",
+      [token]
+    );
 
-    if (snapshot.empty) {
+    if (rows.length === 0) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    const userDoc = snapshot.docs[0];
-    const userData = userDoc.data();
-
-    // ⏳ Check token expiration
+    const user = rows[0];
     const now = new Date();
-    if (userData.reset_token_expires.toDate() < now) {
+
+    if (new Date(user.reset_token_expires) < now) {
       return res.status(400).json({ message: "Token has expired" });
     }
 
-    // 🔐 Hash the new password using bcrypt
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // ✅ Update password and clear token fields
-    await userDoc.ref.update({
-      password: hashedPassword,
-      reset_token: admin.firestore.FieldValue.delete(),
-      reset_token_expires: admin.firestore.FieldValue.delete(),
-    });
+    // Update password (plain text) and clear token
+    await db.execute(
+      "UPDATE customers SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE customer_id = ?",
+      [newPassword, user.customer_id]
+    );
 
     return res.json({ message: "Password updated successfully" });
   } catch (err) {

@@ -37,7 +37,7 @@ const NewPassword = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/update-password`, {
+      const res = await fetch("http://localhost:5002/update-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),

@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ['typo-detective-web.onrender.com'], // ✅ Add this line
+    allowedHosts: ['typo-detective-web.onrender.com'], 
   },
   plugins: [
     react(),
