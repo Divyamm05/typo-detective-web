@@ -48,7 +48,7 @@ router.post("/forgot-password", async (req, res) => {
       reset_token_expires: resetTokenExpires.toISOString(),
     });
 
-    const resetLink = `http://localhost:8080/new-password?token=${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/new-password?token=${resetToken}`;
     console.log(`[EMAIL] Reset link: ${resetLink}`);
 
     // Email setup

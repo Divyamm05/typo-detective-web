@@ -82,7 +82,7 @@ app.post("/forgot-password", (req, res) => {
       async (err) => {
         if (err) return res.status(500).json({ message: "Failed to update token" });
 
-        const resetLink = `http://localhost:8080/new-password?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/new-password?token=${token}`;
 
         const transporter = nodemailer.createTransport({
           service: "gmail",

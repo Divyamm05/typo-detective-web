@@ -23,7 +23,7 @@ const Login = () => {
   const { toast } = useToast();
 
   const handleLogin = async (email: string, password: string) => {
-    const res = await fetch("http://localhost:5002/login", {
+    const res = await fetch(`${process.env.FRONTEND_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -36,7 +36,7 @@ const Login = () => {
   };
 
   const handleSignup = async (email: string, password: string) => {
-    const res = await fetch("http://localhost:5002/signup", {
+    const res = await fetch(`${process.env.FRONTEND_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -102,7 +102,7 @@ const Login = () => {
     }
   
     try {
-      const res = await fetch("http://localhost:5000/forgot-password", {
+      const res = await fetch(`${process.env.FRONTEND_URL}/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

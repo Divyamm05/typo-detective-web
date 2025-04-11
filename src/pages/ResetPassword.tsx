@@ -26,7 +26,7 @@ const ResetPassword = () => {
     setIsLoading(true);
     try {
       console.log(`Sending request to reset password for email: ${email}`); // Log email being sent
-      const res = await fetch("http://localhost:5002/forgot-password", {
+      const res = await fetch(`${process.env.FRONTEND_URL}/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
