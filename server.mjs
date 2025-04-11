@@ -7,28 +7,26 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const admin = require("firebase-admin");
+const path = require("path");
 
 dotenv.config();
 
-import cors from "cors";
+const app = express();
+const port = 5002;
+
+// Middleware
 app.use(cors({
-  origin: "https://your-frontend.onrender.com",
+  origin: "https://typo-detective-web.onrender.com",
   credentials: true,
 }));
-
+app.use(bodyParser.json());
 
 // Firebase Admin SDK Init
-const path = require("path");
 const serviceAccount = require(path.join(__dirname, "src", "routes", "serviceAccountKey.json"));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
-const app = express();
-const port = 5002;
-app.use(cors());
-app.use(bodyParser.json());
 
 // MySQL Connection
 const db = mysql.createConnection({
