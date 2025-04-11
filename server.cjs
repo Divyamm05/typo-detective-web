@@ -112,7 +112,7 @@ app.post("/forgot-password", async (req, res) => {
             return res.status(500).json({ message: "Database update error" });
           }
 
-          const resetLink = `http://localhost:8080/new-password?token=${resetToken}`;
+          const resetLink = `${process.env.REACT_APP_BACKEND_URL}/new-password?token=${resetToken}`;
           console.log(`[EMAIL] Reset link: ${resetLink}`);
 
           const transporter = nodemailer.createTransport({

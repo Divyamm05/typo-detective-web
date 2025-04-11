@@ -54,7 +54,7 @@ router.post("/forgot-password", async (req, res) => {
       console.log(`[DB] Token successfully stored for ${email}`);
     }
 
-    const resetLink = `http://localhost:8080/new-password?token=${resetToken}`;
+    const resetLink = `${process.env.REACT_APP_BACKEND_URL}/new-password?token=${resetToken}`;
     console.log(`[EMAIL] Reset link: ${resetLink}`);
 
     console.log("[EMAIL] Creating transporter...");
