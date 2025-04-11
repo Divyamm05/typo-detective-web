@@ -230,4 +230,3 @@ xkit==0.0.0
 yarl==1.15.2
 youtube-dl==2021.4.26
 zipp==3.20.2
-flask
