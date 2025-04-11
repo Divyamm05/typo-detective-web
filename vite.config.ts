@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: ['typo-detective-web.onrender.com'], // ✅ Add this line
   },
   plugins: [
     react(),
@@ -14,7 +15,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      crypto: "crypto-browserify", 
+      crypto: "crypto-browserify",
     },
   },
 }));
