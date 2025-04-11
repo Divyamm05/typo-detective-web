@@ -11,7 +11,9 @@ const admin = require("firebase-admin");
 dotenv.config();
 
 // Firebase Admin SDK Init
-const serviceAccount = require("/home/vr-dt-100/Desktop/typo-detective-web/src/routes/serviceAccountKey.json");
+const path = require("path");
+const serviceAccount = require(path.join(__dirname, "src", "routes", "serviceAccountKey.json"));
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
