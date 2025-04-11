@@ -25,3 +25,4 @@ dist-ssr
 
 .env
 echo "serviceAccountKey.json" >> .gitignore
+src/routes/serviceAccountKey.json
